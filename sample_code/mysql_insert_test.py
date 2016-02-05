@@ -1,5 +1,6 @@
 import pymysql.cursors
-
+from datetime import date
+from datetime import datetime
 # Connect to the database
 connection = pymysql.connect(host='localhost',
                              user='root',
@@ -11,9 +12,12 @@ connection = pymysql.connect(host='localhost',
 try:
     with connection.cursor() as cursor:
         # Create a new record
+        sql = "truncate pixiv_tag_status"
+        cursor.execute(sql)
+
         sql = "INSERT INTO `pixiv_tag_status` (`bases_id`, `get_date`, `search_word`, `total`,`note`, `json`, `created_at`, `updated_at`) " \
               "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-        cursor.execute(sql, (1, '2015-02-01 10:00:00','あああ',333, 'あああ','ううう', '2015-02-01 10:00:00','2015-02-01 10:00:00'))
+        cursor.execute(sql, (1, date.today(),'あああ',333, 'あああ','ううう', datetime.now(),datetime.now()))
 
     # connection is not autocommit by default. So you must commit to save
     # your changes.
