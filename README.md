@@ -15,9 +15,9 @@ pip3 install PyMySQL
 sqlフォルダを参照
 
 ```
-mysql anime_admin_development < pixiv_tag_daily.sql
-mysql anime_admin_development < pixiv_tag_hourly.sql
-mysql anime_admin_development < pixiv_tag_status.sql
+mysql anime_admin_development < sql/DDL/pixiv_tag_daily.sql
+mysql anime_admin_development < sql/DDL/pixiv_tag_hourly.sql
+mysql anime_admin_development < sql/DDL/pixiv_tag_status.sql
 ```
 
 ## 実行
@@ -60,3 +60,9 @@ crontabを全上書きしたい場合は以下
 ```
 whenever -w -f private/schedule.rb 
 ```
+
+## メモ
+
+### CentOS Python3インストール方法
+
+http://blog.umentu.work/?p=153
