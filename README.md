@@ -1,6 +1,6 @@
 #ALICE Batch
 
-Pixivのデータ取得ツール
+pixivのデータ取得ツール
 
 
 #インストールモジュール
@@ -66,3 +66,7 @@ whenever -w -f private/schedule.rb
 ### CentOS Python3インストール方法
 
 http://blog.umentu.work/?p=153
+
+### pixivの検索方法
+
+http://help.pixiv.net/212/

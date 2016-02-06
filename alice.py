@@ -6,6 +6,7 @@ import pymysql.cursors
 from datetime import date
 from datetime import datetime
 import requests
+import re
 
 # 引数が-dの時はデイリーテーブルに保存する
 
@@ -27,6 +28,21 @@ def status_table_init():
 
     finally:
         connection.close()
+
+# スペースが入っていたら()で囲む、全角+は半角に
+def trim_keyword(keyword):
+    #(第二期)などを消去
+    if re.search("\(", keyword) != None:
+        keyword =re.sub(r'(\(.*\))', "", keyword)
+    # 機動戦士ガンダム サンダーボルトなど
+    if re.search("\s" , keyword) != None:
+        keyword = re.sub(r'(.*)', "(" + r"\1" + ")", keyword)
+    # ノルン＋ノネットのため
+    if re.search("＋" , keyword) != None:
+        keyword = keyword.replace('＋', '+')
+
+    return keyword
+
 
 def regist_pixiv_datta(id, get_date, key, total, note, json, history_table):
     connection = pymysql.connect(host='localhost',
@@ -75,15 +91,16 @@ master_list = json.loads(result.text)
 
 for master in master_list:
 
-    titles = master['title']
-    if len(master['title_short1']) > 0:
-        titles += ' or ' + master['title_short1']
+    titles = trim_keyword(master['title'])
+    if len(master['title_short1']) > 0 and titles != trim_keyword(master['title_short1']):
+        titles += ' or ' + trim_keyword(master['title_short1'])
     if len(master['title_short2']) > 0:
-        titles += ' or ' + master['title_short2']
+        titles += ' or ' + trim_keyword(master['title_short2'])
     if len(master['title_short3']) > 0:
-        titles += ' or ' + master['title_short3']
+        titles += ' or ' + trim_keyword(master['title_short3'])
 
     print(titles)
+    continue
     json_result = pixiv.api.search_works(titles, page=1, mode='tag')
     total = json_result.pagination.total
     print(total)
