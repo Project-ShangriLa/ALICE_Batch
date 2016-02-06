@@ -100,7 +100,7 @@ for master in master_list:
         titles += ' or ' + trim_keyword(master['title_short3'])
 
     print(titles)
-    continue
+#    continue
     json_result = pixiv.api.search_works(titles, page=1, mode='tag')
     total = json_result.pagination.total
     print(total)
