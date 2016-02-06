@@ -23,7 +23,7 @@ every 2.hour do
   command "source .bashrc;cd $ALICE_BATCH;python3 alice.py;cd $ALICE_WEB;bundle exe ruby gen_pixiv_ranking.rb -o /usr/share/nginx/html/pix/index.html"
 end
 
-every :day, :at => '01:00am' do
+every :day, :at => '00:35am' do
   command "source .bashrc;cd $ALICE_BATCH;python3 alice.py -d"
 end
 
