@@ -7,11 +7,56 @@ from datetime import date
 from datetime import datetime
 import requests
 import re
+from optparse import OptionParser
 
-# 引数が-dの時はデイリーテーブルに保存する
+#python3 alice.py -y 2016 -c 2
+#python3 alice.py -y 2016 -c 2 -d
+#python3 alice.py -y 2016 -c 2 -d -s 5
+parser = OptionParser()
 
+parser.add_option(
+    '-d', '--day',
+    action = 'store_true',
+    dest = 'day_switch',
+    help = 'day mode on'
+)
 
-def status_table_init():
+parser.add_option(
+    '-y', '--year',
+    action = 'store',
+    type = 'str',
+    dest = 'year',
+)
+
+parser.add_option(
+    '-c', '--cours',
+    action = 'store',
+    type = 'str',
+    dest = 'cours',
+)
+
+parser.add_option(
+    '-s', '--sleep_second',
+    action = 'store',
+    type = 'int',
+    dest = 'sleep_sec',
+)
+
+parser.set_defaults(
+    year = 2016,
+    cours_id = 1,
+    day_switch = False,
+    sleep_sec = 30
+)
+
+options, args = parser.parse_args()
+
+day_switch = options.day_switch
+year = options.year
+cours = options.cours
+sleep_sec = options.sleep_sec
+
+def status_table_init(master_ids):
     connection = pymysql.connect(host='localhost',
                                  user='root',
                                  password='',
@@ -22,10 +67,12 @@ def status_table_init():
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql = "truncate pixiv_tag_status"
+            sql = "delete FROM pixiv_tag_status WHERE bases_id IN (" + ",".join(master_ids) + ")"
             cursor.execute(sql)
-        connection.commit()
 
+        connection.commit()
+    except:
+        print("Unexpected error:", sys.exc_info()[0])
     finally:
         connection.close()
 
@@ -68,26 +115,25 @@ def regist_pixiv_datta(id, get_date, key, total, note, json, history_table):
         connection.close()
 
 
-SLEEP_TIME_SEC = 30
+SLEEP_TIME_SEC = sleep_sec
 history_table = "pixiv_tag_hourly"
 get_date = datetime.now()
-daily_flag = False
 param = sys.argv
 
-if (len(param) > 1 and param[1] == '-d'):
+if (day_switch):
     history_table = "pixiv_tag_daily"
-    daily_flag = True
     get_date = date.today()
-
 
 print(history_table)
 
-status_table_init()
-
-url = 'http://api.moemoe.tokyo/anime/v1/master/2016/1'
+url = 'http://api.moemoe.tokyo/anime/v1/master/' + year + '/' + cours
 result = requests.get(url)
 
 master_list = json.loads(result.text)
+master_ids = []
+for master in master_list:
+    master_ids.append(str(master['id']))
+status_table_init(master_ids)
 
 for master in master_list:
 
