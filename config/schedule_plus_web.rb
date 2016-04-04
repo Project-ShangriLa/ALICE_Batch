@@ -19,11 +19,20 @@
 
 # Learn more: http://github.com/javan/whenever
 set :output, "/var/log/cron.log"
-every 2.hour do
-  command "source .bashrc;cd $ALICE_BATCH;python3 alice.py;cd $ALICE_WEB;bundle exe ruby gen_pixiv_ranking.rb -o /usr/share/nginx/html/pix/index.html"
+every 4.hour do
+  command "source .bashrc;cd $ALICE_BATCH;python3 alice.py -y 2016 -c 1;cd $ALICE_WEB;bundle exe ruby gen_pixiv_ranking.rb -y 2016 -c 1 -o /usr/share/nginx/html/pix/index.html"
 end
 
 every :day, :at => '00:35am' do
-  command "source .bashrc;cd $ALICE_BATCH;python3 alice.py -d"
+  command "source .bashrc;cd $ALICE_BATCH;python3 alice.py -y 2016 -c 1 -d"
+end
+
+every 3.hour do
+  command "source .bashrc;cd $ALICE_BATCH;python3 alice.py -y 2016 -c 2;cd $ALICE_WEB;bundle exe ruby gen_pixiv_ranking.rb -y 2016 -c 2 -o /usr/share/nginx/html/pix/ranking2016spring.html"
+end
+
+#bundle exe ruby gen_pixiv_ranking.rb -o ranking2016spring.html -y 2016 -c 1
+every :day, :at => '00:40am' do
+  command "source .bashrc;cd $ALICE_BATCH;python3 alice.py  -y 2016 -c 2 -d"
 end
 
