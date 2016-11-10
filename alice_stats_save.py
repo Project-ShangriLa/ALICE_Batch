@@ -62,7 +62,7 @@ def status_table_init(bases_id, search_word_list):
             dq = '"'
 
             # Create a new record
-            sql = "delete FROM pixiv_stats_status WHERE search_word IN (" + dq + "\",\"".join(search_word_list) + dq + ") and bases_id <> " + bases_id
+            sql = "delete FROM pixiv_stats_status WHERE search_word IN (" + dq + "\",\"".join(search_word_list) + dq + ") and bases_id = " + bases_id
 
             print(sql)
 
