@@ -133,7 +133,6 @@ for bases_id in master_list:
 
 for bases_id in master_list:
     for search_word in master_list[bases_id]:
-        json_result = pixiv.api.search_works(search_word, page=1, mode='tag', per_page=50)
 
         favorited_count_public = 0
         favorited_count_private = 0
@@ -142,37 +141,48 @@ for bases_id in master_list:
         views_count = 0
         commented_count = 0
 
-        response = json_result.response
-        for r in response:
-            #'stats': {'favorited_count': {'public': 0, 'private': 0}, 'scored_count': 0, 'score': 0, 'views_count': 3, 'commented_count': 0},
+        next_page = 1
 
-            #pprint(r)
+        while next_page > 0:
+            json_result = pixiv.api.search_works(search_word, page=next_page, mode='tag', per_page=50)
+            next_page = json_result.pagination.next
+            pages = json_result.pagination.pages
 
-            favorited_count_public += r.stats.favorited_count.public
-            favorited_count_private += r.stats.favorited_count.private
-            scored_count += r.stats.scored_count
-            score += r.stats.score
-            views_count += r.stats.views_count
-            commented_count += r.stats.commented_count
+            #pprint(json_result)
 
-            formatted_msg = '%d %d %d %d %d %d' % (favorited_count_public, favorited_count_private, scored_count, score, views_count, commented_count)
-            print(formatted_msg)
+            print(str(next_page) + "/" + str(pages))
 
-        # 1キーワードにつき1insert
-        record_data = {
-            'id': bases_id,
-            'get_date': get_date,
-            'search_word': search_word,
-            'favorited_count_public': favorited_count_public,
-            'favorited_count_private': favorited_count_private,
-            'scored_count': scored_count,
-            'score': score,
-            'views_count': views_count,
-            'commented_count': commented_count,
-            'note': '',
-            'json': ''
-        }
+            response = json_result.response
+            for r in response:
+                #'stats': {'favorited_count': {'public': 0, 'private': 0}, 'scored_count': 0, 'score': 0, 'views_count': 3, 'commented_count': 0},
 
+                #pprint(r)
+
+                favorited_count_public += r.stats.favorited_count.public
+                favorited_count_private += r.stats.favorited_count.private
+                scored_count += r.stats.scored_count
+                score += r.stats.score
+                views_count += r.stats.views_count
+                commented_count += r.stats.commented_count
+
+                formatted_msg = '%d %d %d %d %d %d' % (favorited_count_public, favorited_count_private, scored_count, score, views_count, commented_count)
+                #print(formatted_msg)
+
+            # 1キーワードにつき1insert
+            record_data = {
+                'id': bases_id,
+                'get_date': get_date,
+                'search_word': search_word,
+                'favorited_count_public': favorited_count_public,
+                'favorited_count_private': favorited_count_private,
+                'scored_count': scored_count,
+                'score': score,
+                'views_count': views_count,
+                'commented_count': commented_count,
+                'note': '',
+                'json': ''
+            }
+            time.sleep(SLEEP_TIME_SEC)
         regist_pixiv_data(record_data, history_table)
-        time.sleep(SLEEP_TIME_SEC)
+
 
