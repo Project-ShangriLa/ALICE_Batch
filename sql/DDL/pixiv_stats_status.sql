@@ -12,5 +12,5 @@ CREATE TABLE `pixiv_stats_status` (
   `json` text COLLATE utf8_unicode_ci,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
-  UNIQUE KEY `index_pixiv_stats_status_on_bases_id` (`bases_id`)
+  UNIQUE KEY `index_pixiv_stats_status_on_bases_id` (`bases_id`, `search_word`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

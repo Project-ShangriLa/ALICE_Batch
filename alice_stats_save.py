@@ -7,6 +7,8 @@ from datetime import date
 from datetime import datetime
 import requests
 import re
+from pprint import pprint
+
 from optparse import OptionParser
 
 #'stats': {'favorited_count': {'public': 2, 'private': 0}, 'scored_count': 2, 'score': 20, 'views_count': 24, 'commented_count': 0},
@@ -72,7 +74,7 @@ def status_table_init(bases_id, search_word_list):
     finally:
         connection.close()
 
-def regist_pixiv_datta(record_data, history_table):
+def regist_pixiv_data(record_data, history_table):
     connection = pymysql.connect(host='localhost',
                                  user='root',
                                  password='',
@@ -93,11 +95,11 @@ def regist_pixiv_datta(record_data, history_table):
 
     try:
         with connection.cursor() as cursor:
-            sql = "INSERT INTO `pixiv_stats_status` (`bases_id`, `get_date`, `search_word`, `favorited_count_public`, `favorited_count_private`, `scored_count`, `score`, `view_count`, `commented_count`, `note`, `json`, `created_at`, `updated_at`) " \
+            sql = "INSERT INTO `pixiv_stats_status` (`bases_id`, `get_date`, `search_word`, `favorited_count_public`, `favorited_count_private`, `scored_count`, `score`, `views_count`, `commented_count`, `note`, `json`, `created_at`, `updated_at`) " \
                   "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             cursor.execute(sql, (id, get_date, search_word, favorited_count_public, favorited_count_private,  scored_count, score, views_count, commented_count, note, json, datetime.now(), datetime.now()))
 
-            sql = "INSERT INTO " + history_table + " (`bases_id`, `get_date`, `search_word`, `favorited_count_public`, `favorited_count_private`, `scored_count`, `score`, `view_count`, `commented_count`, `note`, `json`, `created_at`, `updated_at`) " \
+            sql = "INSERT INTO " + history_table + " (`bases_id`, `get_date`, `search_word`, `favorited_count_public`, `favorited_count_private`, `scored_count`, `score`, `views_count`, `commented_count`, `note`, `json`, `created_at`, `updated_at`) " \
                                                    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
             cursor.execute(sql, (id, get_date, search_word, favorited_count_public, favorited_count_private,  scored_count, score, views_count, commented_count, note, json, datetime.now(), datetime.now()))
 
@@ -128,15 +130,49 @@ for bases_id in master_list:
     print(master_list[bases_id])
     status_table_init(bases_id, master_list[bases_id])
 
-'''
-for master in master_list:
 
-    json_result = pixiv.api.search_works(titles, page=1, mode='tag')
-    total = json_result.pagination.total
-    print(total)
+for bases_id in master_list:
+    for search_word in master_list[bases_id]:
+        json_result = pixiv.api.search_works(search_word, page=1, mode='tag', per_page=50)
 
-    regist_pixiv_datta(master['id'], get_date, titles, total, '', '', history_table)
+        favorited_count_public = 0
+        favorited_count_private = 0
+        scored_count = 0
+        score = 0
+        views_count = 0
+        commented_count = 0
 
-    print("sleep!")
-    time.sleep(SLEEP_TIME_SEC)
-'''
+        response = json_result.response
+        for r in response:
+            #'stats': {'favorited_count': {'public': 0, 'private': 0}, 'scored_count': 0, 'score': 0, 'views_count': 3, 'commented_count': 0},
+
+            #pprint(r)
+
+            favorited_count_public += r.stats.favorited_count.public
+            favorited_count_private += r.stats.favorited_count.private
+            scored_count += r.stats.scored_count
+            score += r.stats.score
+            views_count += r.stats.views_count
+            commented_count += r.stats.commented_count
+
+            formatted_msg = '%d %d %d %d %d %d' % (favorited_count_public, favorited_count_private, scored_count, score, views_count, commented_count)
+            print(formatted_msg)
+
+        # 1キーワードにつき1insert
+        record_data = {
+            'id': bases_id,
+            'get_date': get_date,
+            'search_word': search_word,
+            'favorited_count_public': favorited_count_public,
+            'favorited_count_private': favorited_count_private,
+            'scored_count': scored_count,
+            'score': score,
+            'views_count': views_count,
+            'commented_count': commented_count,
+            'note': '',
+            'json': ''
+        }
+
+        regist_pixiv_data(record_data, history_table)
+        time.sleep(SLEEP_TIME_SEC)
+
