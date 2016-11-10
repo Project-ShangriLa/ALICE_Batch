@@ -1,6 +1,8 @@
 {
-  "view_list": [
-    ["1", "character_name"],
-    ["2", "character_name"]
+  "372": [ // Anime API bases_id
+    [
+      "津島喜子",
+      "国木田花丸"
+    ]
   ]
 }

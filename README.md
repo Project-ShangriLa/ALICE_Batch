@@ -8,6 +8,7 @@ pixivのデータ取得ツール
 ```
 pip3 install pixivpy
 pip3 install PyMySQL
+pip3 install beautifulsoup4
 ```
 
 ## 準備
