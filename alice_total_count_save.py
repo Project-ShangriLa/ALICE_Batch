@@ -27,9 +27,9 @@ parser.add_option(
 
 parser.add_option(
     '-f', '--filename',
-    action = 'store_true',
     dest = 'stats_save_list_file',
-    help = 'stat save list'
+    action = 'store',
+    type = 'string',
 )
 
 parser.add_option(
@@ -123,9 +123,13 @@ if (day_switch):
 
 print(history_table)
 
+print(stats_save_list_file)
+
 f = open(stats_save_list_file, 'r')
 master_list = json.load(f)
 f.close
+
+pprint(master_list)
 
 keyword_list = []
 for bases_id in master_list:
