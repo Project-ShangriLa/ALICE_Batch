@@ -8,7 +8,9 @@ param = sys.argv
 
 #複合検索の時はor ラブライブ or 艦これ
 json_result = pixiv.api.search_works(param[1], page=1, mode='tag')
-print(json_result.pagination.total)
+
+print(json_result)
+
 
 
 """
