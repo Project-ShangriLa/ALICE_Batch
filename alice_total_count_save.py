@@ -150,6 +150,7 @@ for bases_id in master_list:
         # pixiv大百科
         # http://dic.pixiv.net/a/%E5%94%90%E6%BE%A4%E6%B4%8B
 
+        print(search_word)
         url = "http://dic.pixiv.net/a/" + urllib.parse.quote(search_word)
         print(url)
 
