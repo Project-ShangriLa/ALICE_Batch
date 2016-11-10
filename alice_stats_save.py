@@ -21,6 +21,13 @@ parser.add_option(
 )
 
 parser.add_option(
+    '-f', '--filename',
+    action = 'store_true',
+    dest = 'stats_save_list_file',
+    help = 'stat save list'
+)
+
+parser.add_option(
     '-s', '--sleep_second',
     action = 'store',
     type = 'int',
@@ -28,8 +35,7 @@ parser.add_option(
 )
 
 parser.set_defaults(
-    year = 2016,
-    cours_id = 1,
+    stats_save_list_file = "./config/view_list.json",
     day_switch = False,
     sleep_sec = 30
 )
@@ -38,8 +44,9 @@ options, args = parser.parse_args()
 
 day_switch = options.day_switch
 sleep_sec = options.sleep_sec
+stats_save_list_file = options.stats_save_list_file
 
-def status_table_init(master_ids):
+def status_table_init(bases_id, search_word_list):
     connection = pymysql.connect(host='localhost',
                                  user='root',
                                  password='',
@@ -49,8 +56,14 @@ def status_table_init(master_ids):
 
     try:
         with connection.cursor() as cursor:
+
+            dq = '"'
+
             # Create a new record
-            sql = "delete FROM pixiv_stats_status WHERE bases_id IN (" + ",".join(master_ids) + ")"
+            sql = "delete FROM pixiv_stats_status WHERE search_word IN (" + dq + "\",\"".join(search_word_list) + dq + ") and bases_id <> " + bases_id
+
+            print(sql)
+
             cursor.execute(sql)
 
         connection.commit()
@@ -59,23 +72,34 @@ def status_table_init(master_ids):
     finally:
         connection.close()
 
-def regist_pixiv_datta(id, get_date, key, total, note, json, history_table):
+def regist_pixiv_datta(record_data, history_table):
     connection = pymysql.connect(host='localhost',
                                  user='root',
                                  password='',
                                  db='anime_admin_development',
                                  charset='utf8mb4',
                                  cursorclass=pymysql.cursors.DictCursor)
+    id = record_data["id"]
+    get_date = record_data["get_date"]
+    search_word = record_data["search_word"]
+    favorited_count_public = record_data["favorited_count_public"]
+    favorited_count_private = record_data["favorited_count_private"]
+    scored_count = record_data["scored_count"]
+    score = record_data["score"]
+    views_count = record_data["views_count"]
+    commented_count = record_data["commented_count"]
+    note = record_data["note"]
+    json = record_data["json"]
 
     try:
         with connection.cursor() as cursor:
-            sql = "INSERT INTO `pixiv_stats_status` (`bases_id`, `get_date`, `search_word`, `total`,`note`, `json`, `created_at`, `updated_at`) " \
-                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-            cursor.execute(sql, (id, get_date, key, total, note, json, datetime.now(), datetime.now()))
+            sql = "INSERT INTO `pixiv_stats_status` (`bases_id`, `get_date`, `search_word`, `favorited_count_public`, `favorited_count_private`, `scored_count`, `score`, `view_count`, `commented_count`, `note`, `json`, `created_at`, `updated_at`) " \
+                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            cursor.execute(sql, (id, get_date, search_word, favorited_count_public, favorited_count_private,  scored_count, score, views_count, commented_count, note, json, datetime.now(), datetime.now()))
 
-            sql = "INSERT INTO " + history_table + " (`bases_id`, `get_date`, `search_word`, `total`,`note`, `json`, `created_at`, `updated_at`) " \
-                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-            cursor.execute(sql, (id, get_date, key, total, note, json, datetime.now(), datetime.now()))
+            sql = "INSERT INTO " + history_table + " (`bases_id`, `get_date`, `search_word`, `favorited_count_public`, `favorited_count_private`, `scored_count`, `score`, `view_count`, `commented_count`, `note`, `json`, `created_at`, `updated_at`) " \
+                                                   "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            cursor.execute(sql, (id, get_date, search_word, favorited_count_public, favorited_count_private,  scored_count, score, views_count, commented_count, note, json, datetime.now(), datetime.now()))
 
             connection.commit()
 
@@ -94,13 +118,17 @@ if (day_switch):
 
 print(history_table)
 
+f = open(stats_save_list_file, 'r')
+master_list = json.load(f)
+f.close
 
-master_list = json.loads(result.text)
-master_ids = []
-for master in master_list:
-    master_ids.append(str(master['id']))
-status_table_init(master_ids)
+keyword_list = []
+for bases_id in master_list:
 
+    print(master_list[bases_id])
+    status_table_init(bases_id, master_list[bases_id])
+
+'''
 for master in master_list:
 
     json_result = pixiv.api.search_works(titles, page=1, mode='tag')
@@ -111,3 +139,4 @@ for master in master_list:
 
     print("sleep!")
     time.sleep(SLEEP_TIME_SEC)
+'''
