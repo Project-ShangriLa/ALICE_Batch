@@ -143,9 +143,13 @@ for bases_id in master_list:
 
         # pixiv大百科
         # http://dic.pixiv.net/a/%E5%94%90%E6%BE%A4%E6%B4%8B
-        html = urllib2.urlopen("http://dic.pixiv.net/a/") + urllib2.quote(search_word)
 
-        print(html)
+        url = "http://dic.pixiv.net/a/" + urllib2.quote(search_word)
+        print(url)
+        
+        html = urllib2.urlopen(url)
+
+
 
         bsObj = BeautifulSoup(html, "html.parser")
 
