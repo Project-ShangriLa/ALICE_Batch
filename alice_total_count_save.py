@@ -12,6 +12,7 @@ from pprint import pprint
 import urllib
 import urllib.parse
 
+
 from optparse import OptionParser
 
 #'stats': {'favorited_count': {'public': 2, 'private': 0}, 'scored_count': 2, 'score': 20, 'views_count': 24, 'commented_count': 0},
@@ -152,8 +153,11 @@ for bases_id in master_list:
         url = "http://dic.pixiv.net/a/" + urllib.parse.quote(search_word)
         print(url)
 
-        html = urllib.request.urlopen(url)
-
+        try:
+            html = urllib.request.urlopen(url)
+        except Exception as e:
+            pprint(e)
+            continue
 
 
         bsObj = BeautifulSoup(html, "html.parser")
@@ -164,7 +168,7 @@ for bases_id in master_list:
         pprint(total_count)
 
         if (total_count == None):
-           next
+            continue
 
         print(total_count.string.replace("総閲覧数: ", ""))
 
