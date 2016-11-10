@@ -9,7 +9,8 @@ from bs4 import BeautifulSoup
 import requests
 import re
 from pprint import pprint
-import urllib2
+import urllib
+import urllib.parse
 
 from optparse import OptionParser
 
@@ -41,7 +42,7 @@ parser.add_option(
 parser.set_defaults(
     stats_save_list_file = "./config/view_list.json",
     day_switch = False,
-    sleep_sec = 30
+    sleep_sec = 10
 )
 
 options, args = parser.parse_args()
@@ -144,10 +145,10 @@ for bases_id in master_list:
         # pixiv大百科
         # http://dic.pixiv.net/a/%E5%94%90%E6%BE%A4%E6%B4%8B
 
-        url = "http://dic.pixiv.net/a/" + urllib2.quote(search_word)
+        url = "http://dic.pixiv.net/a/" + urllib.parse.quote(search_word)
         print(url)
-        
-        html = urllib2.urlopen(url)
+
+        html = urllib.request.urlopen(url)
 
 
 
@@ -156,12 +157,14 @@ for bases_id in master_list:
         #  <h2>このタグがついたpixivの作品閲覧データ <span class="total-count">総閲覧数: 37897330</span></h2>
         total_count = bsObj.find("span", class_="total-count")
 
-        if (views_count == None):
+        pprint(total_count)
+
+        if (total_count == None):
            next
 
-        print(total_count.replace("総閲覧数: ", ""))
+        print(total_count.string.replace("総閲覧数: ", ""))
 
-        views_count = int(total_count.replace("総閲覧数: ", ""))
+        views_count = int(total_count.string.replace("総閲覧数: ", ""))
 
         record_data = {
             'id': bases_id,
