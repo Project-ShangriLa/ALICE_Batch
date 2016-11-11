@@ -1,7 +1,9 @@
 CREATE TABLE `pixiv_stats_daily` (
   `bases_id` int(11) DEFAULT NULL,
+  `group_key` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `get_date` datetime DEFAULT NULL,
   `search_word` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `total` int(11) DEFAULT NULL,
   `favorited_count_public` int(11) DEFAULT NULL,
   `favorited_count_private` int(11) DEFAULT NULL,
   `scored_count` int(11) DEFAULT NULL,

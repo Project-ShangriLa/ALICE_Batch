@@ -24,9 +24,9 @@ parser.add_option(
 
 parser.add_option(
     '-f', '--filename',
-    action = 'store_true',
     dest = 'stats_save_list_file',
-    help = 'stat save list'
+    action = 'store',
+    type = 'string',
 )
 
 parser.add_option(
@@ -82,8 +82,10 @@ def regist_pixiv_data(record_data, history_table):
                                  charset='utf8mb4',
                                  cursorclass=pymysql.cursors.DictCursor)
     id = record_data["id"]
+    group_key = record_data["group_key"]
     get_date = record_data["get_date"]
     search_word = record_data["search_word"]
+    total = record_data["total"]
     favorited_count_public = record_data["favorited_count_public"]
     favorited_count_private = record_data["favorited_count_private"]
     scored_count = record_data["scored_count"]
@@ -95,13 +97,13 @@ def regist_pixiv_data(record_data, history_table):
 
     try:
         with connection.cursor() as cursor:
-            sql = "INSERT INTO `pixiv_stats_status` (`bases_id`, `get_date`, `search_word`, `favorited_count_public`, `favorited_count_private`, `scored_count`, `score`, `views_count`, `commented_count`, `note`, `json`, `created_at`, `updated_at`) " \
-                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-            cursor.execute(sql, (id, get_date, search_word, favorited_count_public, favorited_count_private,  scored_count, score, views_count, commented_count, note, json, datetime.now(), datetime.now()))
+            sql = "INSERT INTO `pixiv_stats_status` (`bases_id`, `group_key`, `get_date`, `search_word`, `total`, `favorited_count_public`, `favorited_count_private`, `scored_count`, `score`, `views_count`, `commented_count`, `note`, `json`, `created_at`, `updated_at`) " \
+                  "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            cursor.execute(sql, (id, group_key, get_date, search_word, total, favorited_count_public, favorited_count_private,  scored_count, score, views_count, commented_count, note, json, datetime.now(), datetime.now()))
 
-            sql = "INSERT INTO " + history_table + " (`bases_id`, `get_date`, `search_word`, `favorited_count_public`, `favorited_count_private`, `scored_count`, `score`, `views_count`, `commented_count`, `note`, `json`, `created_at`, `updated_at`) " \
-                                                   "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-            cursor.execute(sql, (id, get_date, search_word, favorited_count_public, favorited_count_private,  scored_count, score, views_count, commented_count, note, json, datetime.now(), datetime.now()))
+            sql = "INSERT INTO " + history_table + " (`bases_id`, `group_key`, `get_date`, `search_word`, `total`, `favorited_count_public`, `favorited_count_private`, `scored_count`, `score`, `views_count`, `commented_count`, `note`, `json`, `created_at`, `updated_at`) " \
+                                                   "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            cursor.execute(sql, (id, group_key, get_date, search_word, total, favorited_count_public, favorited_count_private,  scored_count, score, views_count, commented_count, note, json, datetime.now(), datetime.now()))
 
             connection.commit()
 
@@ -124,6 +126,8 @@ f = open(stats_save_list_file, 'r')
 master_list = json.load(f)
 f.close
 
+group_key = stats_save_list_file
+
 keyword_list = []
 for bases_id in master_list:
 
@@ -143,10 +147,11 @@ for bases_id in master_list:
 
         next_page = 1
 
-        while next_page > 0:
+        while next_page != None and next_page > 0:
             json_result = pixiv.api.search_works(search_word, page=next_page, mode='tag', per_page=50)
             next_page = json_result.pagination.next
             pages = json_result.pagination.pages
+            total = json_result.pagination.total
 
             #pprint(json_result)
 
@@ -166,13 +171,15 @@ for bases_id in master_list:
                 commented_count += r.stats.commented_count
 
                 formatted_msg = '%d %d %d %d %d %d' % (favorited_count_public, favorited_count_private, scored_count, score, views_count, commented_count)
-                #print(formatted_msg)
+                print(formatted_msg)
 
             # 1キーワードにつき1insert
             record_data = {
                 'id': bases_id,
+                'group_key': group_key,
                 'get_date': get_date,
                 'search_word': search_word,
+                'total': total,
                 'favorited_count_public': favorited_count_public,
                 'favorited_count_private': favorited_count_private,
                 'scored_count': scored_count,
